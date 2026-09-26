@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures'
+import { expect, loginAsDemo, test } from './fixtures'
 
 const appRoutes: [path: string, heading: string][] = [
   ['/', 'Dashboard'],
@@ -27,12 +27,14 @@ test.describe('@smoke shell', () => {
 
   for (const [path, heading] of appRoutes) {
     test(`renders ${path}`, async ({ page }) => {
+      await loginAsDemo(page)
       await page.goto(path)
       await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible()
     })
   }
 
   test('sidebar navigates between modules', async ({ page }) => {
+    await loginAsDemo(page)
     await page.goto('/')
     await page.getByRole('link', { name: 'Deliveries' }).click()
     await expect(page).toHaveURL(/\/operations\/deliveries$/)
@@ -40,22 +42,22 @@ test.describe('@smoke shell', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Move History' })).toBeVisible()
   })
 
-  test('login → dashboard', async ({ page }) => {
+  test('demo login (prefilled) lands on the dashboard', async ({ page }) => {
     await page.goto('/login')
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Dashboard' })).toBeVisible()
   })
 
-  test('forgot password walks email → OTP → new password', async ({ page }) => {
-    await page.goto('/forgot-password')
-    await page.getByLabel('Email').fill('demo@stocksense.in')
-    await page.getByRole('button', { name: 'Send code' }).click()
-    await page.keyboard.type('123456')
-    await page.getByRole('button', { name: 'Verify code' }).click()
-    await expect(page.getByLabel('New password')).toBeVisible()
+  test('signed-out visitors are sent to login and returned afterwards', async ({ page }) => {
+    await page.goto('/moves')
+    await expect(page).toHaveURL(/\/login\?next=%2Fmoves$/)
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Move History' })).toBeVisible()
   })
 
   test('unknown routes show 404 inside the shell', async ({ page }) => {
+    await loginAsDemo(page)
     await page.goto('/does-not-exist')
     await expect(page.getByRole('heading', { name: "This page doesn't exist" })).toBeVisible()
   })

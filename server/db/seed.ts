@@ -285,9 +285,3 @@ export function seedDemo(ctx: AppContext, opts: { now?: Date } = {}) {
   return { moves: stock.countMoves(), operations: ctx.operations.list().length }
 }
 
-/** Seed on first boot only. */
-export function seedIfEmpty(ctx: AppContext): boolean {
-  if (ctx.catalog.listWarehouses().length > 0) return false
-  seedDemo(ctx)
-  return true
-}

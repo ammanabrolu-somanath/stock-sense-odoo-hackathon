@@ -7,7 +7,7 @@
  *  - Every move is double-entry (from_location → to_location); virtual locations (vendors,
  *    customers, inventory adjustment) make receipts, deliveries and counts one uniform shape.
  */
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 export const schemaSql = /* sql */ `
 CREATE TABLE users (
@@ -165,4 +165,14 @@ CREATE VIEW internal_quants AS
 SELECT q.product_id, q.location_id, l.warehouse_id, q.qty
 FROM stock_quants q
 JOIN locations l ON l.id = q.location_id AND l.kind = 'internal';
+
+-- Human-readable location names ("HYD/Rack A", "Partners/Vendors") for reads and reports.
+CREATE VIEW location_names AS
+SELECT l.id, l.warehouse_id, l.kind, l.name, w.code AS warehouse_code,
+  CASE l.kind
+    WHEN 'internal' THEN w.code || '/' || l.name
+    WHEN 'adjustment' THEN 'Virtual/' || l.name
+    ELSE 'Partners/' || l.name
+  END AS full_name
+FROM locations l LEFT JOIN warehouses w ON w.id = l.warehouse_id;
 `

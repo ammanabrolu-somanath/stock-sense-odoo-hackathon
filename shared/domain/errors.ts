@@ -1,4 +1,10 @@
-export type DomainErrorCode = 'VALIDATION' | 'NOT_FOUND' | 'INVALID_STATE' | 'INSUFFICIENT_STOCK' | 'CONFLICT'
+export type DomainErrorCode =
+  | 'VALIDATION'
+  | 'UNAUTHORIZED'
+  | 'NOT_FOUND'
+  | 'INVALID_STATE'
+  | 'INSUFFICIENT_STOCK'
+  | 'CONFLICT'
 
 /**
  * Business-rule failure. `message` is written for the end user and shown verbatim in the UI;

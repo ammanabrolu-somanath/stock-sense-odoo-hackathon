@@ -23,6 +23,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+import { useLogout, useSession } from '@/features/auth/queries'
+import { initials } from '@/lib/format'
 import { navGroups } from './nav'
 import { Logo } from './Logo'
 
@@ -33,12 +35,9 @@ function isActive(pathname: string, to: string) {
 export function AppSidebar() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  // Replaced by the real session user in H3.
-  const user = { name: 'Aarav Mehta', email: 'demo@stocksense.in' }
-  const initials = user.name
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
+  const { data: user } = useSession()
+  const logout = useLogout()
+  if (!user) return null
 
   return (
     <Sidebar collapsible="icon">
@@ -84,7 +83,7 @@ export function AppSidebar() {
                 <SidebarMenuButton size="lg" aria-label="Profile menu" className="data-[state=open]:bg-sidebar-accent">
                   <Avatar className="size-7 rounded-md">
                     <AvatarFallback className="rounded-md bg-foreground text-[11px] font-medium text-background">
-                      {initials}
+                      {initials(user.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left leading-tight">
@@ -101,7 +100,7 @@ export function AppSidebar() {
                   <UserRound />
                   My Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => navigate('/login')}>
+                <DropdownMenuItem onSelect={() => logout.mutate(undefined, { onSettled: () => navigate('/login') })}>
                   <LogOut />
                   Log out
                 </DropdownMenuItem>

@@ -75,9 +75,16 @@ function schemaVersion(db: Db): number {
   return db.get<{ user_version: number }>('PRAGMA user_version')?.user_version ?? 0
 }
 
-/** Create the schema on an empty database. Returns true if it was freshly created. */
+/**
+ * Create the schema. Returns true if it was (re)created.
+ * Migration policy for this demo: the data is fully reproducible from the deterministic seed,
+ * so an older schema version is dropped and rebuilt rather than migrated in place.
+ */
 export function migrate(db: Db): boolean {
-  if (schemaVersion(db) >= SCHEMA_VERSION) return false
+  const version = schemaVersion(db)
+  if (version === SCHEMA_VERSION) return false
+  if (version > SCHEMA_VERSION) throw new Error(`Database schema v${version} is newer than this build (v${SCHEMA_VERSION}).`)
+  if (version > 0) dropAll(db)
   db.tx(() => {
     db.raw.exec(schemaSql)
     db.raw.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`)

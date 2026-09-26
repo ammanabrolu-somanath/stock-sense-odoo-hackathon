@@ -12,9 +12,9 @@ describe('api shell', () => {
     expect(res.body.db).toMatchObject({ warehouses: 0, moves: 0, reconciled: true })
   })
 
-  it('returns a JSON error envelope for unknown endpoints', async () => {
+  it('returns a JSON error envelope (401 before sign-in) for unknown endpoints', async () => {
     const res = await request(createApp(createContext())).get('/api/nope')
-    expect(res.status).toBe(404)
-    expect(res.body.error.code).toBe('NOT_FOUND')
+    expect(res.status).toBe(401)
+    expect(res.body.error.code).toBe('UNAUTHORIZED')
   })
 })
