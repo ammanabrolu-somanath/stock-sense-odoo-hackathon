@@ -14,10 +14,8 @@ export default defineConfig({
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, grep: /@mobile/ },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: [
+    { command: 'npm run dev:api', url: 'http://localhost:3001/api/health', reuseExistingServer: true, timeout: 120_000 },
+    { command: 'npm run dev:web', url: 'http://localhost:5173', reuseExistingServer: true, timeout: 120_000 },
+  ],
 })

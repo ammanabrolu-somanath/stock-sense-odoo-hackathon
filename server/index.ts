@@ -1,7 +1,15 @@
 import { createApp } from './app.ts'
+import { createContext } from './context.ts'
+import { seedIfEmpty } from './db/seed.ts'
 
 const port = Number(process.env.PORT ?? 3001)
+const ctx = createContext({ file: process.env.DB_PATH ?? 'data/stocksense.db' })
 
-createApp().listen(port, () => {
+const t0 = performance.now()
+if (seedIfEmpty(ctx)) {
+  console.log(`[api] seeded demo data in ${Math.round(performance.now() - t0)} ms`)
+}
+
+createApp(ctx).listen(port, () => {
   console.log(`[api] listening on http://localhost:${port}`)
 })

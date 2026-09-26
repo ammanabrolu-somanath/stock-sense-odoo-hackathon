@@ -14,10 +14,15 @@ const appRoutes: [path: string, heading: string][] = [
 ]
 
 test.describe('@smoke shell', () => {
-  test('API health responds through the dev proxy', async ({ request }) => {
+  test('API serves a seeded, reconciled ledger through the dev proxy', async ({ request }) => {
     const res = await request.get('/api/health')
     expect(res.ok()).toBe(true)
-    expect((await res.json()).ok).toBe(true)
+    const body = await res.json()
+    expect(body.ok).toBe(true)
+    // Hour 2: the API serves a seeded, reconciled ledger.
+    expect(body.db.warehouses).toBe(3)
+    expect(body.db.moves).toBeGreaterThan(500)
+    expect(body.db.reconciled).toBe(true)
   })
 
   for (const [path, heading] of appRoutes) {
