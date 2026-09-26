@@ -12,7 +12,10 @@ export const formatMoneyCompact = (n: number) => inrCompact.format(n)
 export const formatNumber = (n: number) => num.format(n)
 
 export const UOM_LABEL: Record<Uom, string> = { unit: 'units', kg: 'kg', m: 'm', L: 'L', box: 'boxes' }
-export const formatQty = (n: number, uom: Uom) => `${num.format(n)} ${uom === 'unit' && n === 1 ? 'unit' : uom === 'box' && n === 1 ? 'box' : UOM_LABEL[uom]}`
+/** Singular for exactly one countable item: "1 unit", "1 box" (kg, m, L never change). */
+export const uomLabel = (uom: Uom, n: number) => (Math.abs(n) === 1 && uom === 'unit' ? 'unit' : Math.abs(n) === 1 && uom === 'box' ? 'box' : UOM_LABEL[uom])
+export const formatQty = (n: number, uom: Uom) => `${num.format(n)} ${uomLabel(uom, n)}`
+export const formatRate = (n: number) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: n < 10 ? 1 : 0 }).format(n)
 
 export const formatDate = (iso: string) => dateFmt.format(new Date(iso))
 export const formatDateTime = (iso: string) => dateTimeFmt.format(new Date(iso))

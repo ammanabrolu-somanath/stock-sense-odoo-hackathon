@@ -3,6 +3,8 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
+import { ProductDetailPage } from '@/features/products/ProductDetailPage'
+import { ProductsPage } from '@/features/products/ProductsPage'
 import { ProfilePage } from '@/features/profile/ProfilePage'
 import { AppLayout } from './layouts/AppLayout'
 import { AuthLayout } from './layouts/AuthLayout'
@@ -24,8 +26,8 @@ const appRoutes: RouteObject[] = [
     path: 'products',
     handle: { crumb: 'Products' },
     children: [
-      { index: true, element: <PlaceholderPage description="Everything you stock, and where it is." /> },
-      { path: ':productId', element: <PlaceholderPage />, handle: { crumb: 'Product' } },
+      { index: true, element: <ProductsPage /> },
+      { path: ':productId', element: <ProductDetailPage />, handle: { crumb: 'Product' } },
     ],
   },
   {

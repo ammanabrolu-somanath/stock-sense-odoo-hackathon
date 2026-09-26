@@ -40,7 +40,7 @@ const productFields = {
     .toUpperCase()
     .regex(/^[A-Z0-9][A-Z0-9._-]{1,31}$/, 'SKU: 2–32 letters, digits, dot, dash or underscore.'),
   name: z.string().trim().min(1, 'Enter a product name.').max(120),
-  categoryId: id,
+  categoryId: z.coerce.number({ invalid_type_error: 'Choose a category.' }).int().positive('Choose a category.'),
   uom: z.enum(UOMS),
   cost: z.coerce.number().min(0, 'Cost cannot be negative.').max(10_000_000),
   price: z.coerce.number().min(0, 'Price cannot be negative.').max(10_000_000),
@@ -49,9 +49,12 @@ const productFields = {
   leadTimeDays: z.coerce.number().int().min(0).max(365),
   supplier: optionalText(120),
 }
-const minMax = (v: { reorderMin?: number; reorderMax?: number }) =>
+/** Product fields without refinements — for forms that add their own (e.g. opening stock inputs). */
+export const productFieldsSchema = z.object(productFields)
+
+export const minMax = (v: { reorderMin?: number; reorderMax?: number }) =>
   v.reorderMin === undefined || v.reorderMax === undefined || v.reorderMax >= v.reorderMin
-const minMaxIssue = { message: 'Maximum must be at least the minimum.', path: ['reorderMax'] }
+export const minMaxIssue = { message: 'Maximum must be at least the minimum.', path: ['reorderMax'] }
 
 export const productInputSchema = z
   .object({
