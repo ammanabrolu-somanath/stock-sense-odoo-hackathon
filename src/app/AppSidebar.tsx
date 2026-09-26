@@ -49,6 +49,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="gap-0 py-1">
+        <nav aria-label="Main" className="flex flex-col">
         {navGroups.map((group) => (
           <SidebarGroup key={group.label} className="py-1.5">
             <SidebarGroupLabel className="h-6 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
@@ -84,6 +85,7 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
+        </nav>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">

@@ -6,7 +6,7 @@ import { useInvalidateStock } from '@/features/products/queries'
 import { api, qs } from '@/lib/api'
 
 export interface OperationFilter {
-  type: OperationType
+  type?: OperationType
   status?: string
   warehouseId?: string
   locationId?: string

@@ -66,7 +66,7 @@ const columns = [
   }),
 ]
 
-const FILTER_KEYS = ['q', 'categoryId', 'status', 'warehouseId'] as const
+const FILTER_KEYS = ['q', 'categoryId', 'status', 'warehouseId', 'locationId'] as const
 
 export function ProductsPage() {
   const navigate = useNavigate()
@@ -84,6 +84,7 @@ export function ProductsPage() {
         key: 'status',
         label: 'Stock',
         options: [
+          { value: 'available', label: 'Any on hand' },
           { value: 'in_stock', label: 'In stock' },
           { value: 'low', label: 'Low stock' },
           { value: 'out', label: 'Out of stock' },

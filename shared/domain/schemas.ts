@@ -134,5 +134,13 @@ export const productQuerySchema = z.object({
   q: z.string().trim().max(80).optional(),
   categoryId: id.optional(),
   warehouseId: id.optional(),
-  status: z.enum(['in_stock', 'low', 'out']).optional(),
+  locationId: id.optional(),
+  /** in_stock/low/out are the badge states; 'available' is any quantity on hand (in stock + low). */
+  status: z.enum(['in_stock', 'low', 'out', 'available']).optional(),
+})
+
+export const dashboardQuerySchema = z.object({
+  warehouseId: id.optional(),
+  locationId: id.optional(),
+  categoryId: id.optional(),
 })

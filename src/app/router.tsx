@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
 
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
+import { MovesPage } from '@/features/moves/MovesPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 import { OPERATION_CONFIG } from '@/features/operations/config'
@@ -10,17 +12,19 @@ import { OperationListPage } from '@/features/operations/OperationListPage'
 import { ProductDetailPage } from '@/features/products/ProductDetailPage'
 import { ProductsPage } from '@/features/products/ProductsPage'
 import { ProfilePage } from '@/features/profile/ProfilePage'
+import { GeneralSettingsPage } from '@/features/settings/GeneralSettingsPage'
+import { WarehouseDetailPage } from '@/features/settings/WarehouseDetailPage'
+import { WarehousesPage } from '@/features/settings/WarehousesPage'
 import { AppLayout } from './layouts/AppLayout'
 import { AuthLayout } from './layouts/AuthLayout'
 import { NotFoundPage } from './NotFoundPage'
-import { PlaceholderPage } from './PlaceholderPage'
 import { GuestOnly, RequireAuth } from './RequireAuth'
 
 const operationTypes = Object.values(OPERATION_CONFIG)
 
 /** Everything inside the signed-in shell. */
 const appRoutes: RouteObject[] = [
-  { index: true, element: <PlaceholderPage description="A snapshot of inventory operations." />, handle: { crumb: 'Dashboard' } },
+  { index: true, element: <DashboardPage />, handle: { crumb: 'Dashboard' } },
   {
     path: 'products',
     handle: { crumb: 'Products' },
@@ -44,7 +48,7 @@ const appRoutes: RouteObject[] = [
       })),
     ],
   },
-  { path: 'moves', element: <PlaceholderPage description="Every stock movement, append-only." />, handle: { crumb: 'Move History' } },
+  { path: 'moves', element: <MovesPage />, handle: { crumb: 'Move History' } },
   {
     path: 'settings',
     handle: { crumb: 'Settings' },
@@ -54,11 +58,11 @@ const appRoutes: RouteObject[] = [
         path: 'warehouses',
         handle: { crumb: 'Warehouses' },
         children: [
-          { index: true, element: <PlaceholderPage description="Warehouses and their locations." /> },
-          { path: ':warehouseId', element: <PlaceholderPage />, handle: { crumb: 'Warehouse' } },
+          { index: true, element: <WarehousesPage /> },
+          { path: ':warehouseId', element: <WarehouseDetailPage />, handle: { crumb: 'Warehouse' } },
         ],
       },
-      { path: 'general', element: <PlaceholderPage description="Workspace preferences and demo data." />, handle: { crumb: 'General' } },
+      { path: 'general', element: <GeneralSettingsPage />, handle: { crumb: 'General' } },
     ],
   },
   { path: 'profile', element: <ProfilePage />, handle: { crumb: 'My Profile' } },

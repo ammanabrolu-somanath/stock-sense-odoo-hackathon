@@ -51,21 +51,22 @@ export function createInventoryService(deps: {
     return new Map(rows.map((r) => [r.productId, r.qty]))
   }
 
-  function onHandFor(warehouseId?: Id): Map<Id, number> {
-    if (!warehouseId) return stock.onHandByProduct()
+  function onHandFor(warehouseId?: Id, locationId?: Id): Map<Id, number> {
+    if (!warehouseId && !locationId) return stock.onHandByProduct()
     const rows = db.all<{ productId: Id; qty: number }>(
       `SELECT product_id AS productId, ROUND(SUM(qty), 3) AS qty FROM internal_quants
-       WHERE warehouse_id = :warehouseId GROUP BY product_id`,
-      { warehouseId },
+       WHERE (:warehouseId IS NULL OR warehouse_id = :warehouseId) AND (:locationId IS NULL OR location_id = :locationId)
+       GROUP BY product_id`,
+      { warehouseId: warehouseId ?? null, locationId: locationId ?? null },
     )
     return new Map(rows.map((r) => [r.productId, r.qty]))
   }
 
   function summaries(
-    filter: { q?: string; categoryId?: Id; warehouseId?: Id; status?: StockStatus; includeArchived?: boolean } = {},
+    filter: { q?: string; categoryId?: Id; warehouseId?: Id; locationId?: Id; status?: StockStatus | 'available'; includeArchived?: boolean } = {},
   ): ProductSummary[] {
     const categories = new Map(catalog.listCategories().map((c) => [c.id, c.name]))
-    const onHand = onHandFor(filter.warehouseId)
+    const onHand = onHandFor(filter.warehouseId, filter.locationId)
     const incoming = operations.incomingByProduct()
     const out30 = outbound30d()
     const q = filter.q?.toLowerCase()
@@ -100,7 +101,7 @@ export function createInventoryService(deps: {
           }),
         }
       })
-      .filter((p) => !filter.status || p.status === filter.status)
+      .filter((p) => !filter.status || (filter.status === 'available' ? p.onHand > 0 : p.status === filter.status))
   }
 
   function locationSummaries(): LocationSummary[] {

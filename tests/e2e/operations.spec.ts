@@ -132,7 +132,7 @@ test.describe('@smoke operations', () => {
     await expect(rows.first()).toBeVisible()
     for (const row of await rows.all()) await expect(row).toContainText('Waiting')
     const counts = await (await page.request.get('/api/operations/counts')).json()
-    const badge = page.getByRole('link', { name: /Receipts/ }).locator('..').getByText(String(counts.receipt.pending), { exact: true })
+    const badge = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: /Receipts/ }).locator('..').getByText(String(counts.receipt.pending), { exact: true })
     await expect(badge).toBeVisible()
   })
 })

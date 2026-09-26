@@ -1,7 +1,9 @@
 import { Router } from 'express'
 
+import type { MoveRow } from '@domain/api.ts'
 import {
   categoryInputSchema,
+  dashboardQuerySchema,
   locationInputSchema,
   moveQuerySchema,
   productInputSchema,
@@ -13,7 +15,24 @@ import {
 import type { AppContext } from '../context.ts'
 import { currentUser, idParam, parse } from '../http.ts'
 
-/** Products, categories, warehouses, locations and the move ledger. */
+const MAX_CSV_ROWS = 20_000
+
+/** RFC 4180 CSV; quantities stay numeric so spreadsheets can sum them. */
+function toCsv(rows: MoveRow[]): string {
+  const esc = (v: string | number | null) => {
+    let s = v === null ? '' : String(v)
+    // Text that a spreadsheet would treat as a formula (user-entered names) is neutralised.
+    if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) s = `'${s}`
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+  }
+  const header = ['Date', 'Reference', 'Type', 'SKU', 'Product', 'From', 'To', 'Quantity', 'Unit', 'Change', 'Balance']
+  const lines = rows.map((m) =>
+    [m.createdAt, m.reference, m.type, m.sku, m.productName, m.fromLocation, m.toLocation, m.qty, m.uom, m.delta, m.balance].map(esc).join(','),
+  )
+  return [header.join(','), ...lines].join('\r\n') + '\r\n'
+}
+
+/** Products, categories, warehouses, locations, the move ledger and dashboard KPIs. */
 export function inventoryRoutes(ctx: AppContext): Router {
   const r = Router()
   const inv = ctx.inventory
@@ -60,6 +79,19 @@ export function inventoryRoutes(ctx: AppContext): Router {
 
   r.get('/moves', (req, res) => {
     res.json(inv.listMoves(parse(moveQuerySchema, req.query)))
+  })
+  // Same filters as the ledger view, every matching row (capped), as a spreadsheet-friendly file.
+  r.get('/moves.csv', (req, res) => {
+    const filter = parse(moveQuerySchema.omit({ page: true, pageSize: true }), req.query)
+    const { items, total } = inv.listMoves({ ...filter, page: 1, pageSize: MAX_CSV_ROWS })
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="stocksense-moves-${ctx.now().toISOString().slice(0, 10)}.csv"`)
+    if (total > MAX_CSV_ROWS) res.setHeader('X-Truncated', String(total))
+    res.send(toCsv(items))
+  })
+
+  r.get('/dashboard', (req, res) => {
+    res.json(ctx.dashboard.kpis(parse(dashboardQuerySchema, req.query)))
   })
 
   return r

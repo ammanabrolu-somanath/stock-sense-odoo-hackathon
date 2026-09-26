@@ -13,6 +13,8 @@ export interface Facet {
   key: string
   label: string
   options: { value: string; label: string }[]
+  /** Label for the unset value (default "All"), for facets whose default is a view like "Open". */
+  allLabel?: string
 }
 
 const ALL = '__all'
@@ -88,7 +90,7 @@ export function FilterBar({ search, onSearch, searchPlaceholder, facets, values,
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All</SelectItem>
+            <SelectItem value={ALL}>{f.allLabel ?? 'All'}</SelectItem>
             {f.options.map((o) => (
               <SelectItem key={o.value} value={o.value}>
                 {o.label}

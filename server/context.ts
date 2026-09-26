@@ -4,6 +4,7 @@ import { createOperationsRepo } from './repos/operations.repo.ts'
 import { createStockRepo } from './repos/stock.repo.ts'
 import { createUsersRepo } from './repos/users.repo.ts'
 import { createAuthService } from './services/auth.service.ts'
+import { createDashboardService } from './services/dashboard.service.ts'
 import { createInventoryService } from './services/inventory.service.ts'
 import { createOperationsService, type Clock } from './services/operations.service.ts'
 
@@ -19,7 +20,8 @@ export function createContext(opts: { file?: string; now?: Clock } = {}) {
   const ops = createOperationsService({ db, catalog, operations, stock, now })
   const inventory = createInventoryService({ db, catalog, operations, stock, ops, now })
   const auth = createAuthService({ db, users, now })
-  return { db, catalog, operations, stock, users, ops, inventory, auth, now }
+  const dashboard = createDashboardService({ db, catalog, operations, now })
+  return { db, catalog, operations, stock, users, ops, inventory, auth, dashboard, now }
 }
 
 export type AppContext = ReturnType<typeof createContext>

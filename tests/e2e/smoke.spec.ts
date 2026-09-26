@@ -20,7 +20,7 @@ test.describe('@smoke shell', () => {
     const body = await res.json()
     expect(body.ok).toBe(true)
     // Hour 2: the API serves a seeded, reconciled ledger.
-    expect(body.db.warehouses).toBe(3)
+    expect(body.db.warehouses).toBeGreaterThanOrEqual(3) // seeded HYD, BLR, BOM (+ any created by other tests)
     expect(body.db.moves).toBeGreaterThan(500)
     expect(body.db.reconciled).toBe(true)
   })
@@ -36,9 +36,10 @@ test.describe('@smoke shell', () => {
   test('sidebar navigates between modules', async ({ page }) => {
     await loginAsDemo(page)
     await page.goto('/')
-    await page.getByRole('link', { name: 'Deliveries' }).click()
+    const nav = page.getByRole('navigation', { name: 'Main' })
+    await nav.getByRole('link', { name: 'Deliveries' }).click()
     await expect(page).toHaveURL(/\/operations\/deliveries$/)
-    await page.getByRole('link', { name: 'Move History' }).click()
+    await nav.getByRole('link', { name: 'Move History' }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Move History' })).toBeVisible()
   })
 
