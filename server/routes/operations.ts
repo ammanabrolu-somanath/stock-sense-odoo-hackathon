@@ -14,6 +14,10 @@ export function operationRoutes(ctx: AppContext): Router {
     res.json({ items: ctx.inventory.enrichOperations(ctx.operations.list(filter)) })
   })
 
+  r.get('/counts', (_req, res) => {
+    res.json(ctx.inventory.pendingCounts())
+  })
+
   r.post('/', (req, res) => {
     const input = parse(operationInputSchema, req.body)
     const op = ctx.ops.create({ ...input, createdBy: currentUser(res).id })

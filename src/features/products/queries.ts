@@ -80,6 +80,6 @@ export function useSaveProduct(id?: Id) {
       id === undefined
         ? api<ProductDetail>('/api/products', { method: 'POST', body })
         : api<ProductDetail>(`/api/products/${id}`, { method: 'PATCH', body }),
-    onSuccess: () => invalidate(),
+    onSuccess: () => void invalidate(),
   })
 }

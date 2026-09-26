@@ -19,11 +19,13 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { useLogout, useSession } from '@/features/auth/queries'
+import { useOperationCounts } from '@/features/operations/queries'
 import { initials } from '@/lib/format'
 import { navGroups } from './nav'
 import { Logo } from './Logo'
@@ -37,6 +39,7 @@ export function AppSidebar() {
   const navigate = useNavigate()
   const { data: user } = useSession()
   const logout = useLogout()
+  const counts = useOperationCounts()
   if (!user) return null
 
   return (
@@ -67,6 +70,14 @@ export function AppSidebar() {
                         <span>{item.title}</span>
                       </NavLink>
                     </SidebarMenuButton>
+                    {item.badgeKey && counts.data && counts.data[item.badgeKey].pending > 0 && (
+                      <SidebarMenuBadge
+                        className={counts.data[item.badgeKey].overdue > 0 ? 'text-warning' : 'text-muted-foreground'}
+                        aria-label={`${counts.data[item.badgeKey].pending} open${counts.data[item.badgeKey].overdue ? `, ${counts.data[item.badgeKey].overdue} overdue` : ''}`}
+                      >
+                        {counts.data[item.badgeKey].pending}
+                      </SidebarMenuBadge>
+                    )}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>

@@ -54,6 +54,9 @@ export function inventoryRoutes(ctx: AppContext): Router {
   r.get('/locations', (_req, res) => {
     res.json({ items: inv.listLocations() })
   })
+  r.get('/locations/:id/stock', (req, res) => {
+    res.json({ items: inv.stockAtLocation(idParam(req)) })
+  })
 
   r.get('/moves', (req, res) => {
     res.json(inv.listMoves(parse(moveQuerySchema, req.query)))

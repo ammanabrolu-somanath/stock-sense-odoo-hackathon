@@ -3,6 +3,10 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
+import { OPERATION_CONFIG } from '@/features/operations/config'
+import { OperationDetailPage } from '@/features/operations/OperationDetailPage'
+import { OperationFormPage } from '@/features/operations/OperationFormPage'
+import { OperationListPage } from '@/features/operations/OperationListPage'
 import { ProductDetailPage } from '@/features/products/ProductDetailPage'
 import { ProductsPage } from '@/features/products/ProductsPage'
 import { ProfilePage } from '@/features/profile/ProfilePage'
@@ -12,12 +16,7 @@ import { NotFoundPage } from './NotFoundPage'
 import { PlaceholderPage } from './PlaceholderPage'
 import { GuestOnly, RequireAuth } from './RequireAuth'
 
-const operationTypes = [
-  { path: 'receipts', crumb: 'Receipts', description: 'Incoming goods from vendors.' },
-  { path: 'deliveries', crumb: 'Deliveries', description: 'Outgoing goods to customers — pick, pack, validate.' },
-  { path: 'transfers', crumb: 'Transfers', description: 'Stock moved between warehouses, racks and floors.' },
-  { path: 'adjustments', crumb: 'Adjustments', description: 'Reconcile recorded stock with a physical count.' },
-] as const
+const operationTypes = Object.values(OPERATION_CONFIG)
 
 /** Everything inside the signed-in shell. */
 const appRoutes: RouteObject[] = [
@@ -36,11 +35,11 @@ const appRoutes: RouteObject[] = [
       { index: true, element: <Navigate to="receipts" replace /> },
       ...operationTypes.map((t) => ({
         path: t.path,
-        handle: { crumb: t.crumb },
+        handle: { crumb: t.plural },
         children: [
-          { index: true, element: <PlaceholderPage description={t.description} /> },
-          { path: 'new', element: <PlaceholderPage />, handle: { crumb: 'New' } },
-          { path: ':operationId', element: <PlaceholderPage />, handle: { crumb: 'Detail' } },
+          { index: true, element: <OperationListPage key={t.type} type={t.type} /> },
+          { path: 'new', element: <OperationFormPage key={t.type} type={t.type} />, handle: { crumb: 'New' } },
+          { path: ':operationId', element: <OperationDetailPage type={t.type} />, handle: { crumb: 'Document' } },
         ],
       })),
     ],

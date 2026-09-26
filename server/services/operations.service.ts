@@ -220,13 +220,19 @@ export function createOperationsService(deps: {
      * live ledger, plan double-entry moves, append them, mark done. Any failure rolls back all of it.
      */
     validate(id: Id): Operation {
+      // A Ready document can lose its stock to a competing one before Validate. Downgrade it
+      // to Waiting (resetting picks/pack) in its own committed step first — the failing
+      // transaction below rolls back, so the stored state must not keep claiming "ready".
+      const current = load(id)
+      if (current.status === 'ready' && shortagesFor(current).length > 0) service.checkAvailability(id)
+
       return db.tx(() => {
         const op = load(id)
         assertCan('validate', op)
         assertHasLines(op)
         const shortages = shortagesFor(op)
         if (shortages.length > 0) {
-          // The throw rolls back this transaction; the document keeps its status and the user sees why.
+          // Nothing is posted. (A document that was Ready has already been moved to Waiting above.)
           throw new DomainError('INSUFFICIENT_STOCK', shortageMessage(op, shortages), { shortages })
         }
         if (op.status !== 'ready' && op.type === 'delivery') {

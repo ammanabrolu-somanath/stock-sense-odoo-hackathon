@@ -259,6 +259,33 @@ export function createInventoryService(deps: {
       return locationSummaries().find((l) => l.id === id)!
     },
 
+    /** Open work per document type (draft/waiting/ready), with how much is past its date. */
+    pendingCounts(): Record<'receipt' | 'delivery' | 'transfer' | 'adjustment', { pending: number; overdue: number }> {
+      const today = now().toISOString().slice(0, 10)
+      const rows = db.all<{ type: 'receipt' | 'delivery' | 'transfer' | 'adjustment'; pending: number; overdue: number }>(
+        `SELECT type, COUNT(*) AS pending, SUM(CASE WHEN substr(scheduled_date, 1, 10) < :today THEN 1 ELSE 0 END) AS overdue
+         FROM operations WHERE status IN ('draft','waiting','ready') GROUP BY type`,
+        { today },
+      )
+      const out = {
+        receipt: { pending: 0, overdue: 0 },
+        delivery: { pending: 0, overdue: 0 },
+        transfer: { pending: 0, overdue: 0 },
+        adjustment: { pending: 0, overdue: 0 },
+      }
+      for (const r of rows) out[r.type] = { pending: r.pending, overdue: r.overdue }
+      return out
+    },
+
+    /** Everything on one shelf, from the ledger — the "available" / "recorded" column in line editors. */
+    stockAtLocation(locationId: Id): { productId: Id; qty: number }[] {
+      if (!catalog.getLocation(locationId)) throw new DomainError('NOT_FOUND', 'This location does not exist.')
+      return db.all(
+        'SELECT product_id AS productId, qty FROM stock_quants WHERE location_id = :locationId AND qty <> 0 ORDER BY product_id',
+        { locationId },
+      )
+    },
+
     enrichOperations: enrich,
     getOperation(id: Id): OperationView {
       return enrich([ops.get(id)])[0]
