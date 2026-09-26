@@ -6,6 +6,7 @@ import type { AppContext } from './context.ts'
 import { resetDemo } from './db/reset.ts'
 import { errorHandler, requireAuth } from './http.ts'
 import { authRoutes } from './routes/auth.ts'
+import { eventRoutes, publishWrites } from './routes/events.ts'
 import { inventoryRoutes } from './routes/inventory.ts'
 import { operationRoutes } from './routes/operations.ts'
 
@@ -39,6 +40,8 @@ export function createApp(ctx: AppContext): Express {
   // ── Signed in ─────────────────────────────────────────────────────────────
   const authed = express.Router()
   authed.use(requireAuth(ctx))
+  authed.use(publishWrites(ctx))
+  authed.use(eventRoutes(ctx))
   authed.use('/operations', operationRoutes(ctx))
   authed.use(inventoryRoutes(ctx))
   authed.post('/demo/reset', (_req, res) => {

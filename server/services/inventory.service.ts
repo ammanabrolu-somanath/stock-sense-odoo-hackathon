@@ -287,6 +287,29 @@ export function createInventoryService(deps: {
       )
     },
 
+    /**
+     * One-click reorder: a *draft* receipt pre-filled from the smart suggestion — supplier,
+     * suggested quantity, into the Stock location of the warehouse holding most of the product.
+     * It stays a draft so a person confirms before anything is ordered.
+     */
+    createReorder(productId: Id, userId: Id | null): OperationView {
+      const p = getProduct(productId)
+      const qty = p.reorder?.suggestedQty ?? Math.max(1, Math.ceil(p.reorderMax - p.onHand - p.incoming))
+      const locations = locationSummaries().filter((l) => l.kind === 'internal')
+      const home = [...p.stock].sort((a, b) => b.qty - a.qty)[0]?.warehouseId ?? locations[0]?.warehouseId
+      const dest = locations.find((l) => l.warehouseId === home && l.name === 'Stock') ?? locations.find((l) => l.warehouseId === home) ?? locations[0]
+      if (!dest) throw new DomainError('VALIDATION', 'Create a warehouse location before reordering.')
+      const op = ops.create({
+        type: 'receipt',
+        partner: p.supplier,
+        destLocationId: dest.id,
+        lines: [{ productId, qty }],
+        note: p.reorder ? `Reorder: ${p.reorder.reason}` : 'Reorder to the maximum level.',
+        createdBy: userId,
+      })
+      return enrich([op])[0]
+    },
+
     enrichOperations: enrich,
     getOperation(id: Id): OperationView {
       return enrich([ops.get(id)])[0]

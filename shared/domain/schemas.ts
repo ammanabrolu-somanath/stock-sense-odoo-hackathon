@@ -109,7 +109,8 @@ export const pickSchema = z.object({ lineId: id.nullish(), picked: z.boolean().d
 
 export const operationQuerySchema = z.object({
   type: z.enum(OPERATION_TYPES).optional(),
-  status: z.enum(OPERATION_STATUSES).optional(),
+  /** A single status, or 'open' = draft + waiting + ready. */
+  status: z.enum([...OPERATION_STATUSES, 'open']).optional(),
   warehouseId: id.optional(),
   locationId: id.optional(),
   categoryId: id.optional(),

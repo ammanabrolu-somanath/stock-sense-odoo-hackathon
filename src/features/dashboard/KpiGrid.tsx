@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ArrowUpRight } from 'lucide-react'
 
+import { AnimatedNumber } from '@/components/shared/AnimatedNumber'
 import { Skeleton } from '@/components/ui/skeleton'
 import { qs } from '@/lib/api'
 import { formatMoneyCompact, formatNumber } from '@/lib/format'
@@ -29,7 +29,7 @@ export function KpiGrid({ kpis, scope }: { kpis: DashboardKpis | undefined; scop
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <Kpi
         label="Total products in stock"
-        value={formatNumber(kpis.productsInStock)}
+        value={kpis.productsInStock}
         to={`/products${qs({ ...s, status: 'available' })}`}
         hint={`of ${formatNumber(kpis.totalProducts)} · ${formatMoneyCompact(kpis.stockValue)} at cost`}
       />
@@ -42,14 +42,14 @@ export function KpiGrid({ kpis, scope }: { kpis: DashboardKpis | undefined; scop
       </div>
       <Kpi
         label="Pending receipts"
-        value={formatNumber(kpis.pendingReceipts.pending)}
+        value={kpis.pendingReceipts.pending}
         to={`/operations/receipts${qs(s)}`}
         hint={kpis.pendingReceipts.overdue > 0 ? `${kpis.pendingReceipts.overdue} overdue` : 'None overdue'}
         tone={kpis.pendingReceipts.overdue > 0 ? 'warning' : undefined}
       />
       <Kpi
         label="Pending deliveries"
-        value={formatNumber(kpis.pendingDeliveries.pending)}
+        value={kpis.pendingDeliveries.pending}
         to={`/operations/deliveries${qs(s)}`}
         hint={[
           kpis.pendingDeliveries.waiting > 0 ? `${kpis.pendingDeliveries.waiting} waiting for stock` : null,
@@ -61,7 +61,7 @@ export function KpiGrid({ kpis, scope }: { kpis: DashboardKpis | undefined; scop
       />
       <Kpi
         label="Internal transfers scheduled"
-        value={formatNumber(kpis.transfersScheduled.pending)}
+        value={kpis.transfersScheduled.pending}
         to={`/operations/transfers${qs(s)}`}
         hint={kpis.transfersScheduled.overdue > 0 ? `${kpis.transfersScheduled.overdue} overdue` : 'None overdue'}
         tone={kpis.transfersScheduled.overdue > 0 ? 'warning' : undefined}
@@ -72,7 +72,7 @@ export function KpiGrid({ kpis, scope }: { kpis: DashboardKpis | undefined; scop
 
 type Tone = 'warning' | 'danger' | undefined
 
-function Kpi({ label, value, hint, to, tone }: { label: string; value: ReactNode; hint: string; to: string; tone?: Tone }) {
+function Kpi({ label, value, hint, to, tone }: { label: string; value: number; hint: string; to: string; tone?: Tone }) {
   return (
     <Link
       to={to}
@@ -80,7 +80,9 @@ function Kpi({ label, value, hint, to, tone }: { label: string; value: ReactNode
       className="group relative rounded-lg border px-4 py-3 outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="pr-5 text-xs text-muted-foreground">{label}</div>
-      <div className="mt-1 text-kpi font-semibold tracking-tight">{value}</div>
+      <div className="mt-1 text-kpi font-semibold tracking-tight">
+        <AnimatedNumber value={value} />
+      </div>
       <div className={cn('mt-0.5 text-xs text-muted-foreground', tone === 'warning' && 'text-warning', tone === 'danger' && 'text-danger')}>{hint}</div>
       <ArrowUpRight className="absolute top-3 right-3 size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden="true" />
     </Link>
@@ -96,7 +98,9 @@ function KpiLink({ to, label, value, tone }: { to: string; label: string; value:
     >
       {/* Size and colour on separate elements: the class merger treats custom text-kpi and text-warning as conflicting. */}
       <div className="text-kpi font-semibold tracking-tight">
-        <span className={cn(tone === 'warning' && 'text-warning', tone === 'danger' && 'text-danger')}>{formatNumber(value)}</span>
+        <span className={cn(tone === 'warning' && 'text-warning', tone === 'danger' && 'text-danger')}>
+          <AnimatedNumber value={value} />
+        </span>
       </div>
       <div className="text-xs text-muted-foreground">{label}</div>
     </Link>

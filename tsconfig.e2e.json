@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server.tsbuildinfo",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
     "target": "es2023",
     "lib": [
-      "ES2023"
+      "ES2023",
+      "DOM"
     ],
     "types": [
       "node"
@@ -27,8 +28,7 @@
     }
   },
   "include": [
-    "server",
-    "shared",
-    "vitest.config.ts"
+    "tests",
+    "playwright.config.ts"
   ]
 }

@@ -25,7 +25,7 @@ export interface NewOperation {
 
 export interface OperationFilter {
   type?: OperationType
-  status?: OperationStatus
+  status?: OperationStatus | 'open'
   warehouseId?: Id
   locationId?: Id
   categoryId?: Id
@@ -93,7 +93,7 @@ export function createOperationsRepo(db: Db) {
          JOIN locations src ON src.id = o.source_location_id
          JOIN locations dst ON dst.id = o.dest_location_id
          WHERE (:type IS NULL OR o.type = :type)
-           AND (:status IS NULL OR o.status = :status)
+           AND (:status IS NULL OR o.status = :status OR (:status = 'open' AND o.status IN ('draft','waiting','ready')))
            AND (:warehouseId IS NULL OR src.warehouse_id = :warehouseId OR dst.warehouse_id = :warehouseId)
            AND (:locationId IS NULL OR o.source_location_id = :locationId OR o.dest_location_id = :locationId)
            AND (:categoryId IS NULL OR EXISTS (

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MotionConfig } from 'motion/react'
 import { ThemeProvider } from './theme'
 
 import { Toaster } from '@/components/ui/sonner'
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: ReactNode }) {
   )
 
   return (
+    <MotionConfig reducedMotion="user">
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={300}>
@@ -22,5 +24,6 @@ export function Providers({ children }: { children: ReactNode }) {
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>
+    </MotionConfig>
   )
 }

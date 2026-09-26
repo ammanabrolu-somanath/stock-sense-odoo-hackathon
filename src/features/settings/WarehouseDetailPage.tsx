@@ -37,7 +37,7 @@ function WarehouseDetail({ wh }: { wh: WarehouseSummary }) {
         </p>
         <UtilizationBar value={wh.utilization} capacity={wh.capacityUnits} className="mt-3 max-w-md" />
       </div>
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Locations wh={wh} />
         <Details wh={wh} />
       </div>

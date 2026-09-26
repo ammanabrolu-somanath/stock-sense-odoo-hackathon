@@ -1,5 +1,6 @@
 import { Db, migrate } from './db/connection.ts'
 import { createCatalogRepo } from './repos/catalog.repo.ts'
+import { createEventBus } from './routes/events.ts'
 import { createOperationsRepo } from './repos/operations.repo.ts'
 import { createStockRepo } from './repos/stock.repo.ts'
 import { createUsersRepo } from './repos/users.repo.ts'
@@ -20,8 +21,9 @@ export function createContext(opts: { file?: string; now?: Clock } = {}) {
   const ops = createOperationsService({ db, catalog, operations, stock, now })
   const inventory = createInventoryService({ db, catalog, operations, stock, ops, now })
   const auth = createAuthService({ db, users, now })
-  const dashboard = createDashboardService({ db, catalog, operations, now })
-  return { db, catalog, operations, stock, users, ops, inventory, auth, dashboard, now }
+  const dashboard = createDashboardService({ db, catalog, operations, inventory, now })
+  const events = createEventBus()
+  return { db, catalog, operations, stock, users, ops, inventory, auth, dashboard, events, now }
 }
 
 export type AppContext = ReturnType<typeof createContext>

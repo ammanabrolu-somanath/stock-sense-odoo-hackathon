@@ -142,3 +142,48 @@ describe('settings: warehouses and locations', () => {
     expect(hyd.utilization).toBeCloseTo(Math.min(1, hyd.onHand / hyd.capacityUnits), 6)
   })
 })
+
+describe('insights: health score, alerts, flow, reorder', () => {
+  it('explains the health score with four weighted factors', async () => {
+    const { health } = (await agent.get('/api/dashboard/insights')).body
+    expect(health.score).toBeGreaterThanOrEqual(0)
+    expect(health.score).toBeLessThanOrEqual(100)
+    expect(health.factors.map((f: { key: string }) => f.key)).toEqual(['availability', 'stockouts', 'deadStock', 'backlog'])
+    expect(health.factors.reduce((s: number, f: { weight: number }) => s + f.weight, 0)).toBe(100)
+    expect(health.factors.every((f: { detail: string }) => f.detail.length > 10)).toBe(true)
+  })
+
+  it('lists alerts out-of-stock first, each with a reorder suggestion, matching the low+out KPIs', async () => {
+    const { alerts } = (await agent.get('/api/dashboard/insights')).body
+    const k = (await agent.get('/api/dashboard')).body
+    expect(alerts.total).toBe(k.lowStock + k.outOfStock)
+    expect(alerts.items[0].status).toBe('out')
+    expect(alerts.items.every((p: { status: string }) => p.status !== 'in_stock')).toBe(true)
+  })
+
+  it('returns 30 zero-filled days of inbound and outbound value', async () => {
+    const { series, activity, utilization } = (await agent.get('/api/dashboard/insights')).body
+    expect(series).toHaveLength(30)
+    expect(series.at(-1).date).toBe('2026-09-26')
+    expect(series.some((d: { outbound: number }) => d.outbound > 0)).toBe(true)
+    expect(activity.length).toBeGreaterThan(0)
+    expect(utilization.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('one-click reorder creates a draft receipt from the suggestion; receiving it improves the score', async () => {
+    const before = (await agent.get('/api/dashboard/insights')).body
+    const target = before.alerts.items.find((p: { status: string; reorder: unknown }) => p.status === 'low' && p.reorder)
+    const res = await agent.post(`/api/products/${target.id}/reorder`)
+    expect(res.status).toBe(201)
+    expect(res.body).toMatchObject({ type: 'receipt', status: 'draft', partner: target.supplier })
+    expect(res.body.lines[0]).toMatchObject({ productId: target.id, qty: target.reorder.suggestedQty })
+    expect(res.body.destLocation).toMatch(/\/Stock$/)
+
+    await agent.post(`/api/operations/${res.body.id}/validate`)
+    const after = (await agent.get('/api/dashboard/insights')).body
+    expect(after.alerts.total).toBe(before.alerts.total - 1)
+    expect(after.health.score).toBeGreaterThanOrEqual(before.health.score)
+    const availability = (h: { factors: { key: string; value: number }[] }) => h.factors.find((f) => f.key === 'availability')!.value
+    expect(availability(after.health)).toBeGreaterThan(availability(before.health))
+  })
+})

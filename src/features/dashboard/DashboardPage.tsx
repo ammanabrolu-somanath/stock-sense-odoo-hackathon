@@ -11,13 +11,19 @@ import { FilterBar, useUrlFilters } from '@/components/shared/FilterBar'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { OperationStatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { OPERATION_CONFIG, operationUrl } from '@/features/operations/config'
 import { useOperations } from '@/features/operations/queries'
 import { isOpen, isOverdue } from '@/features/operations/utils'
 import { useCategories, useLocations, useWarehouses } from '@/features/products/queries'
 import { formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { HealthScoreCard } from './HealthScoreCard'
+import { useInsights } from './insights'
 import { KpiGrid } from './KpiGrid'
+import { LowStockPanel } from './LowStockPanel'
+import { MovementChart } from './MovementChart'
+import { ActivityFeed, WarehouseUtilization } from './SidePanels'
 import { useDashboard } from './queries'
 
 /** The spec's dynamic filters: document type · status · warehouse or location · product category. */
@@ -37,7 +43,8 @@ const columns = [
   col.display({
     id: 'route',
     header: 'From → To',
-    meta: { className: 'hidden lg:table-cell' },
+    // Status matters more than the route here (it's on the document); show the route only when there's room.
+    meta: { className: 'hidden 2xl:table-cell' },
     cell: ({ row }) => (
       <span className="font-mono text-xs whitespace-nowrap text-muted-foreground">
         {row.original.sourceLocation} → {row.original.destLocation}
@@ -66,7 +73,9 @@ export function DashboardPage() {
   const { q, type, status, warehouseId, locationId, categoryId } = filters.values
   const scope = { warehouseId, locationId, categoryId }
   const kpis = useDashboard(scope)
-  const serverStatus = status && status !== ANY_STATUS ? status : undefined
+  const insights = useInsights(scope)
+  // Unset = open work, filtered on the server (not 900+ documents filtered in the browser).
+  const serverStatus = !status ? 'open' : status === ANY_STATUS ? undefined : status
   const operations = useOperations({ type: type as OperationType | undefined, status: serverStatus, warehouseId, locationId, categoryId, q })
   const warehouses = useWarehouses()
   const locations = useLocations()
@@ -121,7 +130,10 @@ export function DashboardPage() {
       />
       <KpiGrid kpis={kpis.data} scope={scope} />
 
-      <section className="mt-6" aria-labelledby="overview-title">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 content-start gap-6 lg:col-span-2">
+          {insights.data ? <MovementChart series={insights.data.series} /> : <Skeleton className="h-[330px]" />}
+      <section aria-labelledby="overview-title">
         <div className="mb-2 flex items-baseline justify-between">
           <h2 id="overview-title" className="text-sm font-medium">
             {status ? 'Operations' : 'Open operations'}
@@ -154,6 +166,23 @@ export function DashboardPage() {
           }
         />
       </section>
+        </div>
+        <div className="grid min-w-0 grid-cols-1 content-start gap-6">
+          {insights.data ? (
+            <>
+              <HealthScoreCard health={insights.data.health} />
+              <LowStockPanel total={insights.data.alerts.total} items={insights.data.alerts.items} />
+              <WarehouseUtilization warehouses={insights.data.utilization} />
+              <ActivityFeed items={insights.data.activity} />
+            </>
+          ) : (
+            <>
+              <Skeleton className="h-80" />
+              <Skeleton className="h-64" />
+            </>
+          )}
+        </div>
+      </div>
     </>
   )
 }

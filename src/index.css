@@ -97,14 +97,15 @@
   --input: oklch(0.89 0.005 286.3);
   --ring: oklch(0.52 0.16 258);
 
-  --chart-1: oklch(0.52 0.16 258);
-  --chart-2: oklch(0.705 0.015 286.067);
+  /* Chart series — validated with the dataviz palette checker (CVD ΔE ≥ 25, ≥ 3:1 on surface). */
+  --chart-1: #2466c3;
+  --chart-2: #eb6834;
   --chart-3: oklch(0.6 0.13 160);
   --chart-4: oklch(0.7 0.14 70);
   --chart-5: oklch(0.6 0.18 20);
 
   --status-draft: oklch(0.5 0.016 285.9);
-  --status-waiting: oklch(0.55 0.13 62);
+  --status-waiting: oklch(0.47 0.11 60); /* darkened for AA 4.5:1 on its own 12% tint */
   --status-ready: oklch(0.5 0.15 258);
   --status-done: oklch(0.5 0.12 160);
   --status-canceled: oklch(0.53 0.17 20);
@@ -141,8 +142,8 @@
   --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.66 0.15 258);
 
-  --chart-1: oklch(0.66 0.15 258);
-  --chart-2: oklch(0.55 0.016 285.938);
+  --chart-1: #5492ec;
+  --chart-2: #d95926;
   --chart-3: oklch(0.72 0.13 160);
   --chart-4: oklch(0.78 0.14 70);
   --chart-5: oklch(0.7 0.17 20);

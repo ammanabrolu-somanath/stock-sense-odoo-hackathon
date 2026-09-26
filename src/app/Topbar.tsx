@@ -11,10 +11,25 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { Moon, Sun } from 'lucide-react'
+import type { LiveStatus } from '@/hooks/use-live-updates'
+import { cn } from '@/lib/utils'
+import { AlertCenter } from './AlertCenter'
+import { CommandMenu } from './CommandMenu'
+import { useTheme } from './theme'
 
 export type RouteHandle = { crumb?: string }
 
-export function Topbar() {
+const LIVE_LABEL: Record<LiveStatus, string> = {
+  live: 'Live — updates from other users appear automatically',
+  connecting: 'Connecting to live updates…',
+  offline: 'Live updates offline — refresh to reconnect',
+}
+
+export function Topbar({ live }: { live: LiveStatus }) {
+  const { theme, setTheme } = useTheme()
   const crumbs = useMatches()
     .filter((m) => (m.handle as RouteHandle | undefined)?.crumb)
     .map((m) => ({ label: (m.handle as RouteHandle).crumb as string, to: m.pathname }))
@@ -41,6 +56,28 @@ export function Topbar() {
           ))}
         </BreadcrumbList>
       </Breadcrumb>
+      <div className="ml-auto flex items-center gap-1.5">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span role="status" aria-label={LIVE_LABEL[live]} className="mr-1 hidden items-center gap-1.5 text-xs text-muted-foreground md:flex">
+              <span className={cn('size-1.5 rounded-full', live === 'live' ? 'bg-success' : live === 'connecting' ? 'bg-warning' : 'bg-danger')} aria-hidden="true" />
+              {live === 'live' ? 'Live' : live === 'connecting' ? 'Connecting' : 'Offline'}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{LIVE_LABEL[live]}</TooltipContent>
+        </Tooltip>
+        <CommandMenu />
+        <AlertCenter />
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
+          aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun /> : <Moon />}
+        </Button>
+      </div>
     </header>
   )
 }

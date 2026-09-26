@@ -273,3 +273,14 @@ describe('read models for the operations screens', () => {
     expect((await agent.get('/api/operations?q=HYD/IN/00001')).body.items[0].status).toBe('done')
   })
 })
+
+describe('open-work filter', () => {
+  it("status=open returns draft, waiting and ready documents only", async () => {
+    await receive(steel, 5)
+    await post('', { type: 'receipt', destLocationId: loc.stock, lines: [{ productId: steel, qty: 1 }] })
+    const d = await post('', { type: 'delivery', sourceLocationId: loc.stock, lines: [{ productId: steel, qty: 99 }] })
+    await post(`/${d.body.id}/confirm`)
+    const items = (await agent.get('/api/operations?status=open')).body.items as { status: string }[]
+    expect(items.map((o) => o.status).sort()).toEqual(['draft', 'waiting'])
+  })
+})

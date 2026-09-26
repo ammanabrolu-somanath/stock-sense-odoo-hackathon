@@ -90,7 +90,7 @@ export function ProductDetailPage() {
         </Stat>
       </dl>
 
-      <div className="mb-6 grid gap-6 lg:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Section title="Stock by location" className="lg:col-span-2">
           <StockByLocation product={p} />
         </Section>
@@ -238,7 +238,7 @@ function DetailSkeleton() {
       <Skeleton className="h-7 w-64" />
       <Skeleton className="mt-2 h-4 w-80" />
       <Skeleton className="mt-6 h-20 w-full" />
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Skeleton className="h-48 lg:col-span-2" />
         <Skeleton className="h-48" />
       </div>

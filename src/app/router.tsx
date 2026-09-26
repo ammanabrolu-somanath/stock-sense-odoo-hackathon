@@ -1,20 +1,9 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router'
 
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
-import { DashboardPage } from '@/features/dashboard/DashboardPage'
-import { MovesPage } from '@/features/moves/MovesPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 import { OPERATION_CONFIG } from '@/features/operations/config'
-import { OperationDetailPage } from '@/features/operations/OperationDetailPage'
-import { OperationFormPage } from '@/features/operations/OperationFormPage'
-import { OperationListPage } from '@/features/operations/OperationListPage'
-import { ProductDetailPage } from '@/features/products/ProductDetailPage'
-import { ProductsPage } from '@/features/products/ProductsPage'
-import { ProfilePage } from '@/features/profile/ProfilePage'
-import { GeneralSettingsPage } from '@/features/settings/GeneralSettingsPage'
-import { WarehouseDetailPage } from '@/features/settings/WarehouseDetailPage'
-import { WarehousesPage } from '@/features/settings/WarehousesPage'
 import { AppLayout } from './layouts/AppLayout'
 import { AuthLayout } from './layouts/AuthLayout'
 import { NotFoundPage } from './NotFoundPage'
@@ -22,15 +11,26 @@ import { GuestOnly, RequireAuth } from './RequireAuth'
 
 const operationTypes = Object.values(OPERATION_CONFIG)
 
-/** Everything inside the signed-in shell. */
+/*
+ * Every signed-in page is code-split: the sign-in screen downloads only the shell and auth
+ * forms, and each module (the dashboard carries the charting library) loads on first visit.
+ */
 const appRoutes: RouteObject[] = [
-  { index: true, element: <DashboardPage />, handle: { crumb: 'Dashboard' } },
+  {
+    index: true,
+    lazy: async () => ({ Component: (await import('@/features/dashboard/DashboardPage')).DashboardPage }),
+    handle: { crumb: 'Dashboard' },
+  },
   {
     path: 'products',
     handle: { crumb: 'Products' },
     children: [
-      { index: true, element: <ProductsPage /> },
-      { path: ':productId', element: <ProductDetailPage />, handle: { crumb: 'Product' } },
+      { index: true, lazy: async () => ({ Component: (await import('@/features/products/ProductsPage')).ProductsPage }) },
+      {
+        path: ':productId',
+        lazy: async () => ({ Component: (await import('@/features/products/ProductDetailPage')).ProductDetailPage }),
+        handle: { crumb: 'Product' },
+      },
     ],
   },
   {
@@ -41,14 +41,38 @@ const appRoutes: RouteObject[] = [
         path: t.path,
         handle: { crumb: t.plural },
         children: [
-          { index: true, element: <OperationListPage key={t.type} type={t.type} /> },
-          { path: 'new', element: <OperationFormPage key={t.type} type={t.type} />, handle: { crumb: 'New' } },
-          { path: ':operationId', element: <OperationDetailPage type={t.type} />, handle: { crumb: 'Document' } },
+          {
+            index: true,
+            lazy: async () => {
+              const { OperationListPage } = await import('@/features/operations/OperationListPage')
+              return { element: <OperationListPage key={t.type} type={t.type} /> }
+            },
+          },
+          {
+            path: 'new',
+            handle: { crumb: 'New' },
+            lazy: async () => {
+              const { OperationFormPage } = await import('@/features/operations/OperationFormPage')
+              return { element: <OperationFormPage key={t.type} type={t.type} /> }
+            },
+          },
+          {
+            path: ':operationId',
+            handle: { crumb: 'Document' },
+            lazy: async () => {
+              const { OperationDetailPage } = await import('@/features/operations/OperationDetailPage')
+              return { element: <OperationDetailPage type={t.type} /> }
+            },
+          },
         ],
       })),
     ],
   },
-  { path: 'moves', element: <MovesPage />, handle: { crumb: 'Move History' } },
+  {
+    path: 'moves',
+    lazy: async () => ({ Component: (await import('@/features/moves/MovesPage')).MovesPage }),
+    handle: { crumb: 'Move History' },
+  },
   {
     path: 'settings',
     handle: { crumb: 'Settings' },
@@ -58,14 +82,26 @@ const appRoutes: RouteObject[] = [
         path: 'warehouses',
         handle: { crumb: 'Warehouses' },
         children: [
-          { index: true, element: <WarehousesPage /> },
-          { path: ':warehouseId', element: <WarehouseDetailPage />, handle: { crumb: 'Warehouse' } },
+          { index: true, lazy: async () => ({ Component: (await import('@/features/settings/WarehousesPage')).WarehousesPage }) },
+          {
+            path: ':warehouseId',
+            lazy: async () => ({ Component: (await import('@/features/settings/WarehouseDetailPage')).WarehouseDetailPage }),
+            handle: { crumb: 'Warehouse' },
+          },
         ],
       },
-      { path: 'general', element: <GeneralSettingsPage />, handle: { crumb: 'General' } },
+      {
+        path: 'general',
+        lazy: async () => ({ Component: (await import('@/features/settings/GeneralSettingsPage')).GeneralSettingsPage }),
+        handle: { crumb: 'General' },
+      },
     ],
   },
-  { path: 'profile', element: <ProfilePage />, handle: { crumb: 'My Profile' } },
+  {
+    path: 'profile',
+    lazy: async () => ({ Component: (await import('@/features/profile/ProfilePage')).ProfilePage }),
+    handle: { crumb: 'My Profile' },
+  },
   { path: '*', element: <NotFoundPage />, handle: { crumb: 'Not found' } },
 ]
 

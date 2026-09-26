@@ -93,6 +93,12 @@ export function inventoryRoutes(ctx: AppContext): Router {
   r.get('/dashboard', (req, res) => {
     res.json(ctx.dashboard.kpis(parse(dashboardQuerySchema, req.query)))
   })
+  r.get('/dashboard/insights', (req, res) => {
+    res.json(ctx.dashboard.insights(parse(dashboardQuerySchema, req.query)))
+  })
+  r.post('/products/:id/reorder', (req, res) => {
+    res.status(201).json(inv.createReorder(idParam(req), currentUser(res).id))
+  })
 
   return r
 }
