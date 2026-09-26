@@ -1,0 +1,29 @@
+# Render Blueprint for the StockSense API (Express + node:sqlite).
+# The web app is served by Vercel, which rewrites /api/* here (see vercel.json), so the
+# browser sees a single origin and the session cookie stays first-party.
+services:
+  - type: web
+    name: stocksense-api
+    runtime: node
+    plan: free
+    region: singapore
+    # tsx runs the TypeScript server directly; it is a devDependency, so include dev deps.
+    buildCommand: npm ci --include=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.13.1
+      - key: NODE_ENV
+        value: production
+      # The free tier's disk is ephemeral: the database is re-seeded on each cold start,
+      # which suits a demo. Use a Render disk and point DB_PATH at it to persist data.
+      - key: DB_PATH
+        value: data/stocksense.db
+      # Trust only Render's own load balancer. (Trusting 2 hops would let a caller who hits this
+      # URL directly forge X-Forwarded-For; login/OTP limits are per account anyway.)
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      # No email server: the OTP is shown in the UI. Set to "false" once email is wired.
+      - key: OTP_DEMO_MODE
+        value: "true"

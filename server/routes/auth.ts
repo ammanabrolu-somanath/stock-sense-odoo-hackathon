@@ -1,4 +1,4 @@
-import { Router, type CookieOptions, type Response } from 'express'
+import { Router, type CookieOptions, type Request, type Response } from 'express'
 import { rateLimit } from 'express-rate-limit'
 
 import { loginSchema, otpRequestSchema, otpResetSchema, otpVerifySchema, signupSchema } from '@domain/schemas.ts'
@@ -9,10 +9,16 @@ const isProd = process.env.NODE_ENV === 'production'
 /** No email server in the demo: the OTP is returned so the UI can show it. Set OTP_DEMO_MODE=false to disable. */
 const otpDemoMode = process.env.OTP_DEMO_MODE !== 'false'
 
-const limiter = (limit: number, windowMinutes: number) =>
+/**
+ * Two layers: per client IP, and per account (the email being attacked). The per-account
+ * limit is what stops brute force on one user — it holds even if an attacker rotates IPs or
+ * forges X-Forwarded-For, which is why it doesn't depend on proxy configuration at all.
+ */
+const limiter = (limit: number, windowMinutes: number, by: 'ip' | 'account' = 'ip') =>
   rateLimit({
     windowMs: windowMinutes * 60_000,
     limit: isProd ? limit : limit * 20,
+    ...(by === 'account' ? { keyGenerator: (req: Request) => `account:${String(req.body?.email ?? '').trim().toLowerCase()}` } : {}),
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     statusCode: 429,
@@ -27,7 +33,9 @@ function setSession(res: Response, token: string, expiresAt: string) {
 export function authRoutes(ctx: AppContext): Router {
   const r = Router()
   const credentialLimiter = limiter(20, 5)
+  const accountLoginLimiter = limiter(10, 15, 'account')
   const otpLimiter = limiter(8, 15)
+  const accountOtpLimiter = limiter(8, 15, 'account')
 
   r.post('/signup', credentialLimiter, (req, res) => {
     const { user, token, expiresAt } = ctx.auth.signup(parse(signupSchema, req.body))
@@ -35,7 +43,7 @@ export function authRoutes(ctx: AppContext): Router {
     res.status(201).json({ user })
   })
 
-  r.post('/login', credentialLimiter, (req, res) => {
+  r.post('/login', credentialLimiter, accountLoginLimiter, (req, res) => {
     const { user, token, expiresAt } = ctx.auth.login(parse(loginSchema, req.body))
     setSession(res, token, expiresAt)
     res.json({ user })
@@ -53,7 +61,7 @@ export function authRoutes(ctx: AppContext): Router {
     res.json({ user: ctx.auth.userForToken(req.cookies?.[SESSION_COOKIE]) ?? null })
   })
 
-  r.post('/otp/request', otpLimiter, (req, res) => {
+  r.post('/otp/request', otpLimiter, accountOtpLimiter, (req, res) => {
     const { email } = parse(otpRequestSchema, req.body)
     const { code } = ctx.auth.requestOtp(email)
     res.json({
@@ -63,13 +71,13 @@ export function authRoutes(ctx: AppContext): Router {
     })
   })
 
-  r.post('/otp/verify', otpLimiter, (req, res) => {
+  r.post('/otp/verify', otpLimiter, accountOtpLimiter, (req, res) => {
     const { email, code } = parse(otpVerifySchema, req.body)
     ctx.auth.verifyOtp(email, code)
     res.json({ ok: true })
   })
 
-  r.post('/otp/reset', otpLimiter, (req, res) => {
+  r.post('/otp/reset', otpLimiter, accountOtpLimiter, (req, res) => {
     ctx.auth.resetPassword(parse(otpResetSchema, req.body))
     res.json({ ok: true, message: 'Password updated. Sign in with your new password.' })
   })

@@ -187,3 +187,17 @@ describe('insights: health score, alerts, flow, reorder', () => {
     expect(availability(after.health)).toBeGreaterThan(availability(before.health))
   })
 })
+
+describe('analytics', () => {
+  it('classifies ABC by consumption value: shares sum to 1, classes ordered A → B → C', async () => {
+    const { abc, totals, categories } = (await agent.get('/api/analytics')).body
+    const shares = abc.rows.reduce((s: number, r: { share: number }) => s + r.share, 0)
+    expect(shares).toBeCloseTo(1, 2)
+    const order = abc.rows.map((r: { abc: string }) => r.abc).join('')
+    expect(order).toMatch(/^A+B*C*$/)
+    expect(abc.summary.A.valueShare).toBeGreaterThanOrEqual(0.8)
+    expect(abc.rows.find((r: { sku: string }) => r.sku === 'EL-TAB-10').abc).toBe('C') // dead stock never moves
+    expect(totals.daysOfInventory).toBeGreaterThan(0)
+    expect(categories.reduce((s: number, c: { stockValue: number }) => s + c.stockValue, 0)).toBe(totals.stockValue)
+  })
+})

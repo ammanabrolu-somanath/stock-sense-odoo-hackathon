@@ -14,6 +14,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    proxy: { '/api': 'http://localhost:3001' },
+    // API_PORT lets the e2e suite run its own API beside a developer's (see playwright.config.ts).
+    proxy: { '/api': `http://localhost:${process.env.API_PORT ?? 3001}` },
   },
 })

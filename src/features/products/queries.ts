@@ -12,7 +12,7 @@ export interface ProductFilter {
 }
 
 /** Everything whose numbers depend on the ledger; invalidated after any stock-changing mutation. */
-export const stockKeys = ['products', 'product', 'moves', 'warehouses', 'locations', 'operations', 'operation', 'dashboard'] as const
+export const stockKeys = ['products', 'product', 'moves', 'warehouses', 'locations', 'operations', 'operation', 'dashboard', 'analytics'] as const
 
 export function useInvalidateStock() {
   const qc = useQueryClient()

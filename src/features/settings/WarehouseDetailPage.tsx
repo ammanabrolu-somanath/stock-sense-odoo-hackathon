@@ -16,11 +16,12 @@ import { qs } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import { useAddLocation, useUpdateWarehouse } from './queries'
 import { UtilizationBar } from './UtilizationBar'
+import { WarehouseMap } from './WarehouseMap'
 
 export function WarehouseDetailPage() {
   const id = Number(useParams().warehouseId)
   const warehouses = useWarehouses()
-  if (!warehouses.data) return <Skeleton className="h-64 w-full" aria-label="Loading warehouse" />
+  if (!warehouses.data) return <Skeleton className="h-64 w-full" role="status" aria-label="Loading warehouse" />
   const wh = warehouses.data.find((w) => w.id === id)
   if (!wh) return <NotFoundPage />
   return <WarehouseDetail key={wh.id} wh={wh} />
@@ -37,6 +38,7 @@ function WarehouseDetail({ wh }: { wh: WarehouseSummary }) {
         </p>
         <UtilizationBar value={wh.utilization} capacity={wh.capacityUnits} className="mt-3 max-w-md" />
       </div>
+      <WarehouseMap wh={wh} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Locations wh={wh} />
         <Details wh={wh} />

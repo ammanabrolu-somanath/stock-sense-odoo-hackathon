@@ -15,7 +15,7 @@ import type { DashboardKpis, DashboardScope } from './queries'
 export function KpiGrid({ kpis, scope }: { kpis: DashboardKpis | undefined; scope: DashboardScope }) {
   if (!kpis) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-busy="true" aria-label="Loading KPIs">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" role="status" aria-busy="true" aria-label="Loading KPIs">
         {Array.from({ length: 5 }, (_, i) => (
           <Skeleton key={i} className="h-[104px]" />
         ))}

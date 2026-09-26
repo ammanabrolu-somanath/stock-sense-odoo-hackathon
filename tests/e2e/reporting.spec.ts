@@ -55,7 +55,8 @@ test.describe('@smoke reporting', () => {
   test('the operations overview shows open work by default and follows the status filter', async ({ page }) => {
     await page.goto('/')
     const overview = page.getByRole('table', { name: 'Operations overview' })
-    await expect(overview.locator('tbody tr[data-row]').first()).toBeVisible()
+    // First dashboard visit on a fresh dev server compiles the lazily loaded chart bundle.
+    await expect(overview.locator('tbody tr[data-row]').first()).toBeVisible({ timeout: 15_000 })
     for (const row of await overview.locator('tbody tr[data-row]').all()) {
       await expect(row).not.toContainText(/Done|Canceled/)
     }
@@ -84,5 +85,29 @@ test.describe('@smoke reporting', () => {
     await page.getByLabel('New location name').fill('Cold Room')
     await page.getByRole('button', { name: 'Add location' }).click()
     await expect(locations).toContainText(`${code}/Cold Room`)
+  })
+})
+
+test.describe('@smoke P2', () => {
+  test.beforeEach(async ({ page }) => {
+    await loginAsDemo(page)
+  })
+
+  test('analytics: ABC classes, ranked products and category turnover', async ({ page }) => {
+    await page.goto('/analytics')
+    await expect(page.getByRole('heading', { level: 1, name: 'Analytics' })).toBeVisible()
+    const ranked = page.getByRole('table', { name: 'Products ranked by consumption value' })
+    await expect(ranked.locator('tbody tr').first()).toContainText('A')
+    await expect(page.getByRole('table', { name: 'Turnover by category' })).toContainText('Raw Materials')
+    await expect(page.getByText('Inventory turnover')).toBeVisible()
+  })
+
+  test('warehouse floor map: a tile per location, each opening that location’s ledger', async ({ page }) => {
+    const hyd = (await (await page.request.get('/api/warehouses')).json()).items.find((w: { code: string }) => w.code === 'HYD')
+    await page.goto(`/settings/warehouses/${hyd.id}`)
+    const map = page.getByRole('region', { name: 'Floor map' })
+    await expect(map.getByRole('link')).toHaveCount(hyd.locations.length)
+    await map.getByRole('link', { name: /^HYD\/Stock:/ }).click()
+    await expect(page).toHaveURL(/\/moves\?locationId=\d+/)
   })
 })

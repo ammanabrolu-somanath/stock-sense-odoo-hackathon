@@ -31,6 +31,7 @@ test.describe('@smoke accessibility', () => {
       ['/operations/adjustments/new', 'Product lines'],
       [`/moves?productId=${steel.id}`, 'Stock moves'],
       ['/settings/warehouses', 'Warehouses'],
+      ['/analytics', 'Products ranked by consumption value'],
     ]
     await page.goto('/')
     for (const theme of ['light', 'dark'] as const) {
@@ -64,7 +65,7 @@ test.describe('@smoke mobile layout', () => {
     const steel = (await (await page.request.get('/api/products?q=RM-STL-012')).json()).items[0]
     const hyd = (await (await page.request.get('/api/warehouses')).json()).items[0]
     const delivery = (await (await page.request.get('/api/operations?type=delivery&status=ready')).json()).items[0]
-    const paths = ['/', '/products', `/products/${steel.id}`, '/operations/deliveries', `/operations/deliveries/${delivery.id}`, '/operations/receipts/new', '/moves', '/settings/warehouses', `/settings/warehouses/${hyd.id}`, '/profile']
+    const paths = ['/', '/products', `/products/${steel.id}`, '/operations/deliveries', `/operations/deliveries/${delivery.id}`, '/operations/receipts/new', '/moves', '/settings/warehouses', `/settings/warehouses/${hyd.id}`, '/analytics', '/profile']
     for (const path of paths) {
       await page.goto(path)
       await page.getByRole('heading', { level: 1 }).waitFor()

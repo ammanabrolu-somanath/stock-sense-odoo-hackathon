@@ -2,6 +2,7 @@ import {
   ArrowDownToLine,
   ArrowLeftRight,
   ArrowUpFromLine,
+  ChartColumn,
   ClipboardCheck,
   History,
   LayoutDashboard,
@@ -41,7 +42,10 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: 'Reporting',
-    items: [{ title: 'Move History', to: '/moves', icon: History }],
+    items: [
+      { title: 'Move History', to: '/moves', icon: History },
+      { title: 'Analytics', to: '/analytics', icon: ChartColumn },
+    ],
   },
   {
     label: 'Settings',

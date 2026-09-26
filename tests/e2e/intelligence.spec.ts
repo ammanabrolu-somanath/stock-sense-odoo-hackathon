@@ -53,7 +53,7 @@ test.describe('@smoke intelligence', () => {
     await expect(kpi).toHaveAttribute('aria-label', new RegExp(`^Pending receipts: ${k0.pendingReceipts.pending}\\.`))
 
     // Another signed-in window drafts a receipt through the API.
-    const other = await browser.newContext({ baseURL: 'http://localhost:5173' })
+    const other = await browser.newContext({ baseURL: new URL(page.url()).origin })
     await other.request.post('/api/auth/login', { data: { email: 'demo@stocksense.in', password: 'demo1234' } })
     const shelf = (await (await other.request.get('/api/locations')).json()).items.find((l: { fullName: string }) => l.fullName === 'HYD/Stock')
     const product = (await (await other.request.get('/api/products?q=RM-STL-012')).json()).items[0]

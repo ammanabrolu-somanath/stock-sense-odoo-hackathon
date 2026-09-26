@@ -74,6 +74,11 @@ const appRoutes: RouteObject[] = [
     handle: { crumb: 'Move History' },
   },
   {
+    path: 'analytics',
+    lazy: async () => ({ Component: (await import('@/features/analytics/AnalyticsPage')).AnalyticsPage }),
+    handle: { crumb: 'Analytics' },
+  },
+  {
     path: 'settings',
     handle: { crumb: 'Settings' },
     children: [

@@ -13,8 +13,9 @@ import { operationRoutes } from './routes/operations.ts'
 export function createApp(ctx: AppContext): Express {
   const app = express()
   app.disable('x-powered-by')
-  // Behind Vercel's /api rewrite in production: trust the first proxy for client IPs (rate limits).
-  app.set('trust proxy', 1)
+  // Trust only the proxy we control (Render's load balancer). A higher count would let a caller who
+  // bypasses Vercel forge X-Forwarded-For; credential limits are per account, so they don't rely on IPs.
+  app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS ?? 1))
   app.use(helmet())
   app.use(express.json({ limit: '100kb' }))
   app.use(cookieParser())

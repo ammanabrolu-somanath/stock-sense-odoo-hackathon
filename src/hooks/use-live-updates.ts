@@ -21,7 +21,14 @@ export function useLiveUpdates(): LiveStatus {
     if (typeof EventSource === 'undefined') return
     const source = new EventSource('/api/events')
     let timer: ReturnType<typeof setTimeout> | undefined
-    source.onopen = () => setStatus('live')
+    let opened = false
+    source.onopen = () => {
+      setStatus('live')
+      // A reconnect (network blip, or a proxy's connection cap such as Vercel's 120 s) may have
+      // missed events — refetch once so the screen is never stale after reconnecting.
+      if (opened) void invalidateRef.current()
+      opened = true
+    }
     source.onerror = () => setStatus(source.readyState === EventSource.CLOSED ? 'offline' : 'connecting')
     source.addEventListener('change', () => {
       clearTimeout(timer)

@@ -360,7 +360,7 @@ function ReadOnlyLines({ op }: { op: OperationView }) {
 
 function DetailSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading document">
+    <div role="status" aria-busy="true" aria-label="Loading document">
       <Skeleton className="h-4 w-20" />
       <Skeleton className="mt-2 h-7 w-56" />
       <Skeleton className="mt-4 h-6 w-96 max-w-full" />

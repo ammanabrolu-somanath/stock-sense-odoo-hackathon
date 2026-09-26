@@ -234,7 +234,7 @@ function RecentMoves({ moves, product: p }: { moves: MoveRow[] | undefined; prod
 
 function DetailSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading product">
+    <div role="status" aria-busy="true" aria-label="Loading product">
       <Skeleton className="h-7 w-64" />
       <Skeleton className="mt-2 h-4 w-80" />
       <Skeleton className="mt-6 h-20 w-full" />

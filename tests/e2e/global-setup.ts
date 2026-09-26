@@ -5,7 +5,7 @@ import { request, type FullConfig } from '@playwright/test'
  * playwright.config.ts), so results never depend on what earlier runs or a developer changed.
  */
 export default async function globalSetup(config: FullConfig) {
-  const baseURL = config.projects[0]?.use.baseURL ?? 'http://localhost:5173'
+  const baseURL = config.projects[0]?.use.baseURL ?? 'http://localhost:5174'
   const api = await request.newContext({ baseURL })
   const login = await api.post('/api/auth/login', { data: { email: 'demo@stocksense.in', password: 'demo1234' } })
   if (!login.ok()) throw new Error(`e2e setup: demo login failed (${login.status()})`)

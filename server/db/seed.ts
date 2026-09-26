@@ -175,7 +175,8 @@ export function seedDemo(ctx: AppContext, opts: { now?: Date } = {}) {
           if (p.profile === 'low' && d >= LOW_STOPS_REORDERING) continue
           if (p.profile === 'out' && d >= OUT_STOPS_REORDERING) continue
           const forecast = stock.qtyAt(pid(p), stockLoc(w)) + (incoming.get(key(pid(p), w)) ?? 0)
-          if (forecast > perWh(p, p.min)) continue
+          // Reorder point = minimum + expected demand over the lead time, so stock arrives before it dips.
+          if (forecast > perWh(p, p.min) + p.demand * p.lead) continue
           const qty = Math.ceil(perWh(p, p.max) - forecast)
           const entry = bySupplier.get(p.supplier) ?? { lines: [], lead: 0 }
           entry.lines.push({ productId: pid(p), qty })

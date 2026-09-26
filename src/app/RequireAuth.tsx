@@ -5,7 +5,7 @@ import { useSession } from '@/features/auth/queries'
 
 function ShellSkeleton() {
   return (
-    <div className="flex min-h-svh" aria-busy="true" aria-label="Loading StockSense">
+    <div className="flex min-h-svh" role="status" aria-busy="true" aria-label="Loading StockSense">
       <div className="hidden w-60 border-r bg-sidebar p-3 md:block">
         <Skeleton className="h-6 w-28" />
         <div className="mt-8 grid gap-2">
